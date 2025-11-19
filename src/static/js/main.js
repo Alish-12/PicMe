@@ -16,7 +16,7 @@ const frameSelect = document.getElementById("frame-select");
 let mediaStream = null;
 let lastDataUrl = null;
 
-// Map filter name → CSS filter string (for live <video>)
+// Map filter name → CSS filter string
 function getCssFilterForValue(filter) {
   switch (filter) {
     case "bw":
@@ -37,10 +37,17 @@ async function startCamera() {
       video: { facingMode: "user" },
       audio: false,
     });
+
     video.srcObject = mediaStream;
+
+    video.addEventListener("loadedmetadata", () => {
+      console.log("VIDEO READY:", video.videoWidth, video.videoHeight);
+    });
+
     statusEl.textContent = "Camera is ready!";
     captureBtn.disabled = false;
     restartBtn.disabled = false;
+
   } catch (err) {
     console.error(err);
     statusEl.textContent =
@@ -48,7 +55,7 @@ async function startCamera() {
   }
 }
 
-// Apply filter in real time to <video>
+// Live filter on video
 function applyLiveFilter() {
   const filter = filterSelect.value;
   video.style.filter = getCssFilterForValue(filter);
@@ -56,6 +63,8 @@ function applyLiveFilter() {
 
 filterSelect.addEventListener("change", applyLiveFilter);
 
+
+// Countdown
 function showCountdown(seconds = 3) {
   return new Promise((resolve) => {
     let remaining = seconds;
@@ -78,65 +87,45 @@ function showCountdown(seconds = 3) {
   });
 }
 
-// Apply filter to the pixels currently on the canvas (so the saved image is filtered)
-function applyFilterToCanvas(width, height) {
-  const filter = filterSelect.value;
-  if (filter === "none") return;
 
-  const ctx = canvas.getContext("2d");
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const data = imageData.data;
-
-  for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
-
-    if (filter === "bw") {
-      const avg = (r + g + b) / 3;
-      r = g = b = avg;
-    } else if (filter === "warm") {
-      r = r * 1.1;
-      g = g * 1.02;
-      b = b * 0.9;
-    } else if (filter === "cool") {
-      r = r * 0.9;
-      g = g * 1.02;
-      b = b * 1.1;
-    }
-
-    // clamp 0–255
-    data[i] = Math.max(0, Math.min(255, r));
-    data[i + 1] = Math.max(0, Math.min(255, g));
-    data[i + 2] = Math.max(0, Math.min(255, b));
+// CAPTURE — FIXED VERSION
+async function captureSingleShot() {
+  // Wait until video dimensions are valid
+  while (video.videoWidth === 0 || video.videoHeight === 0) {
+    await new Promise(r => setTimeout(r, 30));
   }
 
-  ctx.putImageData(imageData, 0, 0);
-}
-
-// MVP: capture a single shot
-async function captureSingleShot() {
-  const width = video.videoWidth || 640;
-  const height = video.videoHeight || 480;
+  const width = video.videoWidth;
+  const height = video.videoHeight;
 
   canvas.width = width;
   canvas.height = height;
 
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, width, height);
 
-  // 🔥 Now actually apply the filter to the pixels on canvas
-  applyFilterToCanvas(width, height);
+  // Apply SAME filter as live video
+  const cssFilter = getCssFilterForValue(filterSelect.value);
+  ctx.filter = cssFilter;
 
-  // TODO later: draw frame overlays here using frameSelect.value
+  // Mirror (your video is mirrored)
+  ctx.save();
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, -width, 0, width, height);
+  ctx.restore();
 
+  // Reset filter
+  ctx.filter = "none";
+
+  // Output
   lastDataUrl = canvas.toDataURL("image/png");
   resultImage.src = lastDataUrl;
+
   resultImage.classList.remove("hidden");
   canvas.classList.add("hidden");
 
   downloadBtn.disabled = false;
 }
+
 
 // Main capture handler
 async function capture() {
@@ -148,17 +137,14 @@ async function capture() {
   statusEl.textContent = "Get ready...";
   await showCountdown(3);
 
-  const layout = layoutSelect.value;
-
-  // For now, all layouts just capture a single shot.
-  // Later: implement separate behavior for "strip" and "grid2x2".
   await captureSingleShot();
 
   statusEl.textContent = "Photo captured!";
   await logEvent();
 }
 
-// Log metadata to backend
+
+// Log metadata
 async function logEvent() {
   const payload = {
     layout: layoutSelect.value,
@@ -197,6 +183,7 @@ function restart() {
   statusEl.textContent = "Ready for another shot!";
 }
 
+// Event listeners
 startBtn.addEventListener("click", startCamera);
 captureBtn.addEventListener("click", capture);
 downloadBtn.addEventListener("click", downloadImage);
