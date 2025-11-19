@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PicMe – Online Photobooth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/styles.css') }}"
+  />
+</head>
+<body>
+  <header class="pb-header">
+    <h1>PicMe</h1>
+    <p>Online photobooth for our Systems final project 📸</p>
+  </header>
+
+  <main class="pb-main">
+    <!-- LEFT: camera + result -->
+    <section class="pb-preview">
+      <div class="pb-video-wrapper">
+        <video id="video" autoplay playsinline></video>
+        <div id="countdown" class="pb-countdown hidden"></div>
+      </div>
+
+      <canvas id="canvas" class="hidden"></canvas>
+      <img
+        id="result-image"
+        class="hidden pb-result-image"
+        alt="Captured result"
+      />
+    </section>
+
+    <!-- RIGHT: controls -->
+    <section class="pb-controls">
+      <div class="pb-control-group">
+        <label for="layout-select">Layout</label>
+        <select id="layout-select">
+          <option value="single">Single</option>
+          <option value="strip">Photo strip (3 shots)</option>
+          <option value="grid2x2">2 × 2 grid</option>
+        </select>
+      </div>
+
+      <div class="pb-control-group">
+        <label for="filter-select">Filter</label>
+        <select id="filter-select">
+          <option value="none">None</option>
+          <option value="bw">Black &amp; White</option>
+          <option value="warm">Warm</option>
+          <option value="cool">Cool</option>
+        </select>
+      </div>
+
+      <div class="pb-control-group">
+        <label for="frame-select">Frame</label>
+        <select id="frame-select">
+          <option value="none">None</option>
+          <option value="gold">Gold frame</option>
+          <option value="simple">Simple white</option>
+        </select>
+      </div>
+
+      <div class="pb-buttons">
+        <button id="start-btn">Start Photobooth</button>
+        <button id="capture-btn" disabled>Capture</button>
+        <button id="download-btn" disabled>Download</button>
+        <button id="restart-btn" disabled>Restart</button>
+      </div>
+
+      <p id="status" class="pb-status"></p>
+    </section>
+  </main>
+
+  <footer class="pb-footer">
+    <small>PicMe – Systems Final Project · Containerized Flask app</small>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
