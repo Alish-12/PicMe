@@ -16,7 +16,7 @@ const frameSelect = document.getElementById("frame-select");
 let mediaStream = null;
 let lastDataUrl = null;
 
-// Map filter name → actual CSS filter string
+// Map filter name → CSS filter string (for live <video>)
 function getCssFilterForValue(filter) {
   switch (filter) {
     case "bw":
@@ -78,6 +78,42 @@ function showCountdown(seconds = 3) {
   });
 }
 
+// Apply filter to the pixels currently on the canvas (so the saved image is filtered)
+function applyFilterToCanvas(width, height) {
+  const filter = filterSelect.value;
+  if (filter === "none") return;
+
+  const ctx = canvas.getContext("2d");
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    if (filter === "bw") {
+      const avg = (r + g + b) / 3;
+      r = g = b = avg;
+    } else if (filter === "warm") {
+      r = r * 1.1;
+      g = g * 1.02;
+      b = b * 0.9;
+    } else if (filter === "cool") {
+      r = r * 0.9;
+      g = g * 1.02;
+      b = b * 1.1;
+    }
+
+    // clamp 0–255
+    data[i] = Math.max(0, Math.min(255, r));
+    data[i + 1] = Math.max(0, Math.min(255, g));
+    data[i + 2] = Math.max(0, Math.min(255, b));
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
 // MVP: capture a single shot
 async function captureSingleShot() {
   const width = video.videoWidth || 640;
@@ -87,16 +123,12 @@ async function captureSingleShot() {
   canvas.height = height;
 
   const ctx = canvas.getContext("2d");
-
-  // 🔥 Apply the same filter to the canvas so it shows up in the final image
-  const filter = filterSelect.value;
-  ctx.filter = getCssFilterForValue(filter);
-
-  // TODO later: draw frame overlays here using frameSelect.value
   ctx.drawImage(video, 0, 0, width, height);
 
-  // Reset filter so it doesn't affect anything else later
-  ctx.filter = "none";
+  // 🔥 Now actually apply the filter to the pixels on canvas
+  applyFilterToCanvas(width, height);
+
+  // TODO later: draw frame overlays here using frameSelect.value
 
   lastDataUrl = canvas.toDataURL("image/png");
   resultImage.src = lastDataUrl;
@@ -118,13 +150,9 @@ async function capture() {
 
   const layout = layoutSelect.value;
 
-  if (layout === "single") {
-    await captureSingleShot();
-  } else {
-    // For now: still use single shot as MVP.
-    // Later: implement strip and grid layouts.
-    await captureSingleShot();
-  }
+  // For now, all layouts just capture a single shot.
+  // Later: implement separate behavior for "strip" and "grid2x2".
+  await captureSingleShot();
 
   statusEl.textContent = "Photo captured!";
   await logEvent();
