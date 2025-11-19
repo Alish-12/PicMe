@@ -16,6 +16,20 @@ const frameSelect = document.getElementById("frame-select");
 let mediaStream = null;
 let lastDataUrl = null;
 
+// Map filter name → actual CSS filter string
+function getCssFilterForValue(filter) {
+  switch (filter) {
+    case "bw":
+      return "grayscale(100%)";
+    case "warm":
+      return "sepia(40%) saturate(120%)";
+    case "cool":
+      return "contrast(110%) saturate(110%) hue-rotate(200deg)";
+    default:
+      return "none";
+  }
+}
+
 // Ask for camera access
 async function startCamera() {
   try {
@@ -37,20 +51,7 @@ async function startCamera() {
 // Apply filter in real time to <video>
 function applyLiveFilter() {
   const filter = filterSelect.value;
-  switch (filter) {
-    case "bw":
-      video.style.filter = "grayscale(100%)";
-      break;
-    case "warm":
-      video.style.filter = "sepia(40%) saturate(120%)";
-      break;
-    case "cool":
-      video.style.filter =
-        "contrast(110%) saturate(110%) hue-rotate(200deg)";
-      break;
-    default:
-      video.style.filter = "none";
-  }
+  video.style.filter = getCssFilterForValue(filter);
 }
 
 filterSelect.addEventListener("change", applyLiveFilter);
@@ -86,9 +87,16 @@ async function captureSingleShot() {
   canvas.height = height;
 
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, width, height);
+
+  // 🔥 Apply the same filter to the canvas so it shows up in the final image
+  const filter = filterSelect.value;
+  ctx.filter = getCssFilterForValue(filter);
 
   // TODO later: draw frame overlays here using frameSelect.value
+  ctx.drawImage(video, 0, 0, width, height);
+
+  // Reset filter so it doesn't affect anything else later
+  ctx.filter = "none";
 
   lastDataUrl = canvas.toDataURL("image/png");
   resultImage.src = lastDataUrl;
