@@ -55,5 +55,11 @@ def create_app() -> Flask:
 
 
 if __name__ == "__main__":
+    import os
+
     app = create_app()
-    app.run(host=Config.APP_HOST, port=Config.APP_PORT)
+
+    host = os.environ.get("HOST", Config.APP_HOST if hasattr(Config, "APP_HOST") else "0.0.0.0")
+    port = int(os.environ.get("PORT", Config.APP_PORT if hasattr(Config, "APP_PORT") else 8080))
+
+    app.run(host=host, port=port)
