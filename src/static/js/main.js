@@ -113,6 +113,31 @@ async function captureSingleShot() {
   ctx.restore();
 
   ctx.filter = "none";
+  // === FRAME DRAWING LOGIC ===
+  const selectedFrame = frameSelect.value;
+  const borderWidth = Math.floor(Math.min(width, height) * 0.03); // 3% of size
+
+  if (selectedFrame !== "none") {
+    ctx.save();
+    ctx.lineWidth = borderWidth;
+
+    if (selectedFrame === "gold") {
+      ctx.strokeStyle = "#FFD700"; // gold
+    } else if (selectedFrame === "simple") {
+      ctx.strokeStyle = "#FFFFFF"; // white
+    }
+
+  // draw border on top of image
+    ctx.strokeRect(
+      borderWidth / 2,
+      borderWidth / 2,
+      width - borderWidth,
+      height - borderWidth
+    );
+
+    ctx.restore();
+  }
+// === END FRAME DRAWING LOGIC ===
 
   lastDataUrl = canvas.toDataURL("image/png");
   resultImage.src = lastDataUrl;
