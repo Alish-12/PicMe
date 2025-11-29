@@ -16,21 +16,19 @@ const frameSelect = document.getElementById("frame-select");
 let mediaStream = null;
 let lastDataUrl = null;
 
-// Map filter name → CSS filter string
 function getCssFilterForValue(filter) {
   switch (filter) {
     case "bw":
-      return "grayscale(100%)";
+      return "grayscale(1)";
     case "warm":
-      return "sepia(40%) saturate(120%)";
+      return "sepia(0.4) saturate(1.2)";
     case "cool":
-      return "contrast(110%) saturate(110%) hue-rotate(200deg)";
+      return "contrast(1.1) saturate(1.1) hue-rotate(200deg)";
     default:
       return "none";
   }
 }
 
-// Ask for camera access
 async function startCamera() {
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -42,6 +40,7 @@ async function startCamera() {
 
     video.addEventListener("loadedmetadata", () => {
       console.log("VIDEO READY:", video.videoWidth, video.videoHeight);
+      applyLiveFilter();
     });
 
     statusEl.textContent = "Camera is ready!";
@@ -55,7 +54,6 @@ async function startCamera() {
   }
 }
 
-// Live filter on video
 function applyLiveFilter() {
   const filter = filterSelect.value;
   video.style.filter = getCssFilterForValue(filter);
@@ -63,8 +61,8 @@ function applyLiveFilter() {
 
 filterSelect.addEventListener("change", applyLiveFilter);
 
+applyLiveFilter();
 
-// Countdown
 function showCountdown(seconds = 3) {
   return new Promise((resolve) => {
     let remaining = seconds;
@@ -88,9 +86,7 @@ function showCountdown(seconds = 3) {
 }
 
 
-// CAPTURE — FIXED VERSION
 async function captureSingleShot() {
-  // Wait until video dimensions are valid
   while (video.videoWidth === 0 || video.videoHeight === 0) {
     await new Promise(r => setTimeout(r, 30));
   }
@@ -103,20 +99,21 @@ async function captureSingleShot() {
 
   const ctx = canvas.getContext("2d");
 
-  // Apply SAME filter as live video
   const cssFilter = getCssFilterForValue(filterSelect.value);
-  ctx.filter = cssFilter;
+  try {
+    ctx.filter = cssFilter;
+  } catch (e) {
+    console.warn("ctx.filter not supported or invalid:", e, "filter:", cssFilter);
+    ctx.filter = "none";
+  }
 
-  // Mirror (your video is mirrored)
   ctx.save();
   ctx.scale(-1, 1);
   ctx.drawImage(video, -width, 0, width, height);
   ctx.restore();
 
-  // Reset filter
   ctx.filter = "none";
 
-  // Output
   lastDataUrl = canvas.toDataURL("image/png");
   resultImage.src = lastDataUrl;
 
@@ -127,7 +124,6 @@ async function captureSingleShot() {
 }
 
 
-// Main capture handler
 async function capture() {
   if (!mediaStream) {
     statusEl.textContent = "Start the photobooth first!";
@@ -144,7 +140,6 @@ async function capture() {
 }
 
 
-// Log metadata
 async function logEvent() {
   const payload = {
     layout: layoutSelect.value,
@@ -183,7 +178,6 @@ function restart() {
   statusEl.textContent = "Ready for another shot!";
 }
 
-// Event listeners
 startBtn.addEventListener("click", startCamera);
 captureBtn.addEventListener("click", capture);
 downloadBtn.addEventListener("click", downloadImage);
