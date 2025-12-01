@@ -186,7 +186,7 @@ This ensures the grader’s environment matches ours exactly.
 - Whole app launches reliably with one command  
 
 ### Sample Output
-![Example of photo strip from PicMe](assets/picme_strip_.png)
+![Example of photo strip from PicMe](assets/picme_strip.png)
 
 ---
 
