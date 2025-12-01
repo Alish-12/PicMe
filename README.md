@@ -1,7 +1,7 @@
 # 📸 PicMe – Online Photobooth
 
 PicMe is a browser-based photobooth built for **DS 2022**.  
-The app lets users take photos directly from their webcam, apply filters, choose layouts, add simple frames, and download the final image — all inside the browser.
+The app lets users take photos directly from their webcam, apply filters, choose layouts, add simple frames, and download the final image, all inside the browser.
 
 Everything is containerized, easy to run, and designed to be fully reproducible with a single command.
 

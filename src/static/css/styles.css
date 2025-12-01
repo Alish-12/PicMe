@@ -72,11 +72,24 @@ body {
   background: #000;
 }
 
+/* When layout is strip or 2x2: show a square cropped preview (no distortion) */
+.pb-video-wrapper.is-square {
+  aspect-ratio: 1 / 1;
+}
+
+
 video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
+/* Mirror the live camera preview (selfie-style) */
+#video {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
 
 #canvas,
 #result-image {
@@ -110,17 +123,18 @@ video {
   gap: 1rem;
 }
 
-.pb-control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+.pb-control-group input[type="color"]{
+  width: 100%;
+  height: 44px;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #0d1323;
+  padding: 6px;
 }
 
-.pb-control-group label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.7;
+.pb-control-group label input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: translateY(1px);
 }
 
 .pb-control-group select {
