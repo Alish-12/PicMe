@@ -1,23 +1,26 @@
-# 📸 PicMe – Online Photobooth
+# PicMe – Online Photobooth
+### **1. Executive Summary**
 
-PicMe is a browser-based photobooth built for **DS 2022**.  
-The app lets users take photos directly from their webcam, apply filters, choose layouts, add simple frames, and download the final image, all inside the browser.
 
-Everything is containerized, easy to run, and designed to be fully reproducible with a single command.
+With the increase of popularity in photo booths due to the entertainment and source of instant, shareable memories they offer, the issue of rising costs and inaccessibility emerges. 
+
+PicMe is a browser-based photo booth built to tackle these issues. The app lets users take photos directly from their webcam, apply filters, choose layouts, add simple frames, and download the final image, all inside the browser. The website is free and accessible through a deployed URL. 
+
+Everything is containerized, easy to run, and designed to be fully reproducible with either a single command or a click of a URL.
 
 ---
 
-## 1. Overview
+## 2. System Overview
 
 PicMe uses **WebRTC** for webcam access, **HTML Canvas** for processing images, and a lightweight **Flask** backend for routing and logging.  
-The whole project runs inside Docker using a one-command `./run.sh` script.
+The whole project runs inside Docker using a one-command `./run.sh` script. 
 
 ### Core Features
 - Live webcam preview  
 - Countdown before capturing  
 - Filters: None, Black & White, Warm, Cool  
 - Layouts: Single photo, Photo strip, 2×2 grid  
-- Frames: Simple borders  
+- Frames: Color wheel to choose frame color
 - Download final image as PNG  
 - Backend logging (layout, filter, frame, timestamp)  
 
@@ -25,7 +28,7 @@ This setup matches DS 2022 learning outcomes (APIs, environment variables, loggi
 
 ---
 
-## 2. System Architecture
+**System Architecture**
 
 ```
 Frontend (HTML/CSS/JS)
@@ -53,7 +56,7 @@ Docker Runtime
 
 ---
 
-## 3. Repository Structure
+**Repository Structure**
 
 ```
 PicMe/
@@ -75,14 +78,20 @@ PicMe/
 
 ---
 
-## 4. Running the Project
+## 3. Running the Project
 
-### ⭐ Recommended (used for grading): Docker
+### Docker
 
 From the repo root:
 
-```bash
-./run.sh
+1) Build the image
+```
+docker build -t picme .
+```
+
+2) Run the container
+```
+docker run --rm -p 8080:8080 picme
 ```
 
 Then visit:
@@ -102,22 +111,17 @@ Docker builds the image, installs dependencies, and launches the app using Gunic
 
 ---
 
-### Optional: Run locally (without Docker)
+### URL Deployment
+You can also run PicMe directly in your browser: 
+ 
+- Live URL: https://picme-ahcj.onrender.com
+
+Note: Render free instances may "sleep" when inactive, so the first load can take up to 1 minute. 
 
 This is just for development; Docker is the official way.
-
-```bash
-python -m venv venv
-source venv/bin/activate       # Mac/Linux
-# or .\venv\Scripts\activate   # Windows
-pip install -r requirements.txt
-export FLASK_APP=src.app
-flask run --port 8080
-```
-
 ---
 
-## 5. Design Decisions
+## 4. Design Decisions
 
 ### Flask Backend
 We purposely kept the backend small and readable. It handles:
@@ -162,9 +166,15 @@ The project is fully containerized:
 
 This ensures the grader’s environment matches ours exactly.
 
+### Security and Privacy
+1) Camera Access: PicMe only requests camera permission in your browser when you click **Start Photobooth**. 
+2) No photo uploads by default: Captured photos are processed client-side in the browser, the server does not receive or store image files. 
+3) The app does not require accounts, passwords, or access to files on your device. 
+4) The deployed Render site utilizes HTTPS, so traffic between the browser and server is encrypted in transit. 
+
 ---
 
-## 6. Results
+## 5. Results
 
 ### What Works
 - Smooth real-time webcam preview  
@@ -180,23 +190,16 @@ This ensures the grader’s environment matches ours exactly.
 
 ---
 
-## 7. Future Improvements
+## 6. Future Improvements
 
 If we expanded the project further, we’d consider:
-- Multi-shot real photo strips
 - PNG overlay frames (Polaroid / party frames)
 - Stickers and draggable elements
 - QR code sharing or link-based sharing
 - Saving a local gallery to the backend
-- Cloud deployment using our existing Docker setup
 
 ---
 
-## 8. References
-
-- [Flask Documentation](https://flask.palletsprojects.com/)
-- [MDN WebRTC – getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
-- [MDN Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
-- [Docker Documentation](https://docs.docker.com/)
-- DS 2022 Final Case Project Spec (provided separately)
+## 7. Links
 - [GitHub Repository](https://github.com/Alish-12/PicMe)
+- [Public Cloud App](https://picme-ahcj.onrender.com)
